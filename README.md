@@ -5,4 +5,4 @@ python syn_items_generate.py
 # Run base models utilizing Recbole.
 # https://grouplens.org/datasets/movielens/100k/
 # https://grouplens.org/datasets/book-crossing/
-# https://cseweb.ucsd.edu/ jmcauley/datasets/amazon_v2/
+# https://nijianmo.github.io/amazon/index.html
