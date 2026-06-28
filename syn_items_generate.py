@@ -160,14 +160,14 @@ err=[]
 
 
 #aliyun
-# api_key=os.getenv("DASHSCOPE_API_KEY")
+api_key=os.getenv("DASHSCOPE_API_KEY")
 
-# chatLLM = ChatOpenAI(
-#     api_key=os.getenv("DASHSCOPE_API_KEY"),
-#     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-#     model="qwen3.6-plus",
-#     # other params...
-# )
+chatLLM = ChatOpenAI(
+    api_key=os.getenv("DASHSCOPE_API_KEY"),
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    model="qwen-plus",
+    # other params...
+)
 # api_key=os.getenv("DEEPSEEK_API_KEY")
 # chatLLM = ChatOpenAI(
 #     model='deepseek-chat',
@@ -176,115 +176,105 @@ err=[]
 #     max_tokens=1024
 # )
 
-# output_parser = StrOutputParser()
+output_parser = StrOutputParser()
 
-# llm1 = (
-#     template1_prompt
-#     | chatLLM
-# )
+llm1 = (
+    template1_prompt
+    | chatLLM
+)
 
 
-# def chunker(iterable, size):
-#     iterator = iter(iterable)
-#     while chunk := list(islice(iterator, size)):
-#         yield chunk
-# def make_request_with_retry(chunk, batch_id=None, max_retries=5, retry_delay=5):
+def chunker(iterable, size):
+    iterator = iter(iterable)
+    while chunk := list(islice(iterator, size)):
+        yield chunk
+def make_request_with_retry(chunk, batch_id=None, max_retries=5, retry_delay=5):
 
-#     for attempt in range(max_retries):
-#         try:
-#             batch_start = time.time()
-#             ai_messages = llm1.batch(chunk)
-#             batch_duration = time.time() - batch_start
+    for attempt in range(max_retries):
+        try:
+            batch_start = time.time()
+            ai_messages = llm1.batch(chunk)
+            batch_duration = time.time() - batch_start
 
-#             text_list = [msg.content for msg in ai_messages]
+            text_list = [msg.content for msg in ai_messages]
 
-#             if batch_id is not None:
-#                 stats.record_batch(batch_id, ai_messages, batch_duration)
+            if batch_id is not None:
+                stats.record_batch(batch_id, ai_messages, batch_duration)
 
-#             return text_list, ai_messages
-#         except Exception as e:
-#             time.sleep(retry_delay)
-#     return None, None
+            return text_list, ai_messages
+        except Exception as e:
+            time.sleep(retry_delay)
+    return None, None
 
 inter_text = []
 batch_counter = 0 
 
 
 
-# while len(inter_text) < 1000:
-#     print('input')
-#     final_prompt, inputs_batchs = make_final_prompt(
-#             unique_categorical_features, "user_id", data, template1_prompt,
-#            N_SAMPLES_TOTAL, N_BATCH, N_SAMPLES_PER_CLASS, N_SET, NAME_COLS, N_CLASS
-#         )
+while len(inter_text) < 1000:
+    print('input')
+    final_prompt, inputs_batchs = make_final_prompt(
+            unique_categorical_features, "user_id", data, template1_prompt,
+           N_SAMPLES_TOTAL, N_BATCH, N_SAMPLES_PER_CLASS, N_SET, NAME_COLS, N_CLASS
+        )
 
-#     for i, chunk in enumerate(chunker(inputs_batchs, 2)):
-#         batch_counter += 1
-#         text_list, ai_messages = make_request_with_retry(chunk, batch_id=batch_counter)
-#         if text_list is None:
-#             continue
-#         inter_text.extend(text_list)
+    for i, chunk in enumerate(chunker(inputs_batchs, 2)):
+        batch_counter += 1
+        text_list, ai_messages = make_request_with_retry(chunk, batch_id=batch_counter)
+        if text_list is None:
+            continue
+        inter_text.extend(text_list)
 
-#         if i % 2 == 0: 
-#             time.sleep(5)
+        if i % 2 == 0: 
+            time.sleep(5)
 
-# # generate
-# print('input')
-# final_prompt, inputs_batchs = make_final_prompt(
-#             unique_categorical_features, "user_id", data, template1_prompt,
-#            N_SAMPLES_TOTAL, N_BATCH, N_SAMPLES_PER_CLASS, N_SET, NAME_COLS, N_CLASS
-#         )
+# generate
+print('input')
+final_prompt, inputs_batchs = make_final_prompt(
+            unique_categorical_features, "user_id", data, template1_prompt,
+           N_SAMPLES_TOTAL, N_BATCH, N_SAMPLES_PER_CLASS, N_SET, NAME_COLS, N_CLASS
+        )
 
-# for i, chunk in enumerate(chunker(inputs_batchs, 10)):
-#     batch_counter += 1
+for i, chunk in enumerate(chunker(inputs_batchs, 10)):
+    batch_counter += 1
 
-#     text_list, ai_messages = make_request_with_retry(chunk, batch_id=batch_counter)
-#     if text_list is None:
-#       
-#         continue
-#     inter_text.extend(text_list)
+    text_list, ai_messages = make_request_with_retry(chunk, batch_id=batch_counter)
+    if text_list is None:
+      
+        continue
+    inter_text.extend(text_list)
 
-#     if i % 2 == 0:  
-#         time.sleep(5)
-
-
-# stats.finish()
-# stats.print_summary()
+    if i % 2 == 0:  
+        time.sleep(5)
 
 
-# # stats_json_path = "./data/amazon_toys_and_games_generate_batch1_deepseek_stats.json"
-# # stats.save_to_json(stats_json_path)
-
-# # with open("./data/amazon_toys_and_games_generate_batch1_deepseek.pkl", "wb") as file:
-# #     pickle.dump(inter_text,file)
+stats.finish()
+stats.print_summary()
 
 
-# stats_json_path = "./data/ml-100k/ml-100k_stats.json"
-# stats.save_to_json(stats_json_path)
+stats_json_path = "./data/amazon_toys_and_games_generate_batch1_deepseek_stats.json"
+stats.save_to_json(stats_json_path)
 
-# with open("./data/ml-100k/ml-100k-qwen.pkl", "wb") as file:
-#     pickle.dump(inter_text,file)
-    
-    
+with open("./data/amazon_toys_and_games_generate_batch1_qwen.pkl", "wb") as file:
+    pickle.dump(inter_text,file)
 
 
-
-with open("./data/book-crossing/book-crossing-deepseek.pkl", "rb") as file:
-    inter_text = pickle.load(file)
-print(len(inter_text))
-text_results = []
-all_df=[]
-for i in range(len(inter_text)):
+# with open("./data/book-crossing/book-crossing-deepseek.pkl", "rb") as file:
+#     inter_text = pickle.load(file)
+# print(len(inter_text))
+# text_results = []
+# all_df=[]
+# for i in range(len(inter_text)):
   
-    text_results.append(inter_text[i])
-    # input_df = parse_prompt2df(final_prompt[i].text, split=NAME_COLS, inital_prompt=initial_prompt, col_name=columns1)
-    result_df = parse_result(inter_text[i], NAME_COLS, columns2, CATEGORICAL_FEATURES, unique_categorical_features)        
-    # input_df_all = pd.concat([input_df_all, input_df], axis=0)
-    # synthetic_df_all = pd.concat([synthetic_df_all, result_df], axis=0)
-    all_df.append(result_df)
+#     text_results.append(inter_text[i])
+#     # input_df = parse_prompt2df(final_prompt[i].text, split=NAME_COLS, inital_prompt=initial_prompt, col_name=columns1)
+#     result_df = parse_result(inter_text[i], NAME_COLS, columns2, CATEGORICAL_FEATURES, unique_categorical_features)        
+#     # input_df_all = pd.concat([input_df_all, input_df], axis=0)
+#     # synthetic_df_all = pd.concat([synthetic_df_all, result_df], axis=0)
+#     all_df.append(result_df)
     
-final_df =  pd.concat(all_df, axis=0)
-final_df.to_csv('./data/book-crossing/book-crossing-deepseek.csv', index_label='synindex')
+# final_df =  pd.concat(all_df, axis=0)
+# final_df.to_csv('./data/book-crossing/book-crossing-deepseek.csv', index_label='synindex')
 
 
 
